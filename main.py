@@ -1,12 +1,15 @@
 import json
 import datetime
+from dotenv import dotenv_values
 
 from spotify import Spotify
+from slack import Slack
 
 
 def main():
+    config = dotenv_values(".env")
+    slack_url = config["SLACK_WEBHOOK_URL"]
     d_today = datetime.date.today()
-    print(d_today)
     spotify = Spotify()
     spotify.authorize()
 
@@ -21,6 +24,9 @@ def main():
         
         if item["album_type"] == "album":
             print(item["artists"][0]["name"], ": ", item["name"])
+
+    slack = Slack(slack_url)
+    slack.post({"text": "hi"})
 
 
 
