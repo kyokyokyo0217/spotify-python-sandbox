@@ -1,4 +1,3 @@
-from email import header
 import requests
 from dotenv import dotenv_values
 import base64
