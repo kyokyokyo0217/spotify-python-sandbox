@@ -5,18 +5,20 @@ from dotenv import dotenv_values
 from spotify import Spotify
 from slack import Slack
 
-config = dotenv_values(".env")
-slack_url_album = config["SLACK_WEBHOOK_URL_ALBUM"]
-slack_url_single = config["SLACK_WEBHOOK_URL_SINGLE"]
-
 def main():
     spotify = Spotify()
     spotify.authorize()
 
+    config = dotenv_values(".env")
+    slack_url_album = config["SLACK_WEBHOOK_URL_ALBUM"]
+    slack_url_single = config["SLACK_WEBHOOK_URL_SINGLE"]
+
     new_releases = spotify.get_new_releases()
 
-    notify_new_released_album(new_releases, slack_url_album)
-    notify_new_released_single(new_releases, slack_url_single)
+    albums, singles = separate_releases_into_albums_and_singles(new_releases)
+
+    notify_new_released_album(albums, slack_url_album)
+    notify_new_released_single(singles, slack_url_single)
 
 def get_combined_artists_name(artists):
     artists_buff = []
@@ -25,22 +27,33 @@ def get_combined_artists_name(artists):
     artists = ", ".join(artists_buff)
     return artists
 
-def notify_new_released_album(items, url):
+def separate_releases_into_albums_and_singles(items):
     d_today = datetime.date.today()
-    d_today = "2022-03-18"
-    
+    albums = []
+    singles = []
+
+    for item in items:
+        if str(d_today) != item["release_date"]:
+            continue
+
+        if item["album_type"] != "album":
+            albums.append(item)
+            continue
+        elif item["album_type"] != "single":
+            singles.append(item)
+            continue
+        else:
+            print(f"unknown album_type?: {item['album_type']}")
+            continue
+
+    return albums, singles
+
+def notify_new_released_album(items, url):    
     data = {
         "blocks": []
     }
 
     for item in items:
-        if str(d_today) != item["release_date"]:
-            # print(f"not released today: {item['release_date']}")
-            continue
-        
-        if item["album_type"] != "album": 
-            continue
-
         artists = get_combined_artists_name(item["artists"])
         album_title = item["name"]
         spotify_link = item["external_urls"]["spotify"]
@@ -66,21 +79,11 @@ def notify_new_released_album(items, url):
     slack.post(data)
 
 def notify_new_released_single(items, url):
-    d_today = datetime.date.today()
-    d_today = "2022-03-18"
-    
     data = {
         "blocks": []
     }
 
     for item in items:
-        if str(d_today) != item["release_date"]:
-            # print(f"not released today: {item['release_date']}")
-            continue
-        
-        if item["album_type"] != "single": 
-            continue
-
         artists = get_combined_artists_name(item["artists"])
         album_title = item["name"]
         spotify_link = item["external_urls"]["spotify"]
