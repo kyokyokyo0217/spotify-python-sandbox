@@ -31,11 +31,13 @@ def get_combined_artists_name(artists):
 
 def separate_releases_into_albums_and_singles(items):
     d_today = datetime.date.today()
+    d_today = "2022-03-18"
     print(d_today)
     albums = []
     singles = []
 
     for item in items:
+        print(item["release_date"])
         if str(d_today) != item["release_date"]:
             continue
 
@@ -56,27 +58,38 @@ def notify_new_released_album(items, url):
         "blocks": []
     }
 
-    for item in items:
-        artists = get_combined_artists_name(item["artists"])
-        album_title = item["name"]
-        spotify_link = item["external_urls"]["spotify"]
-        # 用意されているサムネは常に[640x640, 300x300, 64x64]の３種類という前提
-        thumbnail_url = item["images"][1]["url"]
-
+    if len(items) == 0:
         data["blocks"].append(
             {
                 "type": "section",
                 "text": {
-                    "type": "mrkdwn",
-                    "text": f"*{album_title}* \n{artists}\n<{spotify_link}|Listen On Spotify>"
-                },
-                "accessory": {
-                    "type": "image",
-                    "image_url": thumbnail_url,
-                    "alt_text": "alt text for image"
+                    "type": "plain_text",
+                    "text": "Seems like no releases for today...🥺"
                 }
             }
         )
+    else:
+        for item in items:
+            artists = get_combined_artists_name(item["artists"])
+            album_title = item["name"]
+            spotify_link = item["external_urls"]["spotify"]
+            # 用意されているサムネは常に[640x640, 300x300, 64x64]の３種類という前提
+            thumbnail_url = item["images"][1]["url"]
+
+            data["blocks"].append(
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*{album_title}* \n{artists}\n<{spotify_link}|Listen On Spotify>"
+                    },
+                    "accessory": {
+                        "type": "image",
+                        "image_url": thumbnail_url,
+                        "alt_text": "alt text for image"
+                    }
+                }
+            )
 
     slack = Slack(url)
     slack.post(data)
@@ -86,27 +99,38 @@ def notify_new_released_single(items, url):
         "blocks": []
     }
 
-    for item in items:
-        artists = get_combined_artists_name(item["artists"])
-        album_title = item["name"]
-        spotify_link = item["external_urls"]["spotify"]
-        # 用意されているサムネは常に[640x640, 300x300, 64x64]の３種類という前提
-        thumbnail_url = item["images"][1]["url"]
-
+    if len(items) == 0:
         data["blocks"].append(
             {
                 "type": "section",
                 "text": {
-                    "type": "mrkdwn",
-                    "text": f"*{album_title}* \n{artists}\n<{spotify_link}|Listen On Spotify>"
-                },
-                "accessory": {
-                    "type": "image",
-                    "image_url": thumbnail_url,
-                    "alt_text": "alt text for image"
+                    "type": "plain_text",
+                    "text": "Seems like no releases for today...🥺"
                 }
             }
         )
+    else:
+        for item in items:
+            artists = get_combined_artists_name(item["artists"])
+            album_title = item["name"]
+            spotify_link = item["external_urls"]["spotify"]
+            # 用意されているサムネは常に[640x640, 300x300, 64x64]の３種類という前提
+            thumbnail_url = item["images"][1]["url"]
+
+            data["blocks"].append(
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*{album_title}* \n{artists}\n<{spotify_link}|Listen On Spotify>"
+                    },
+                    "accessory": {
+                        "type": "image",
+                        "image_url": thumbnail_url,
+                        "alt_text": "alt text for image"
+                    }
+                }
+            )
 
     slack = Slack(url)
     slack.post(data)
