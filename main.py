@@ -17,6 +17,8 @@ def main():
 
     albums, singles = separate_releases_into_albums_and_singles(new_releases)
 
+    print(f"released_today: albums: {len(albums)}, singles: {len(singles)}")
+
     notify_new_released_album(albums, slack_url_album)
     notify_new_released_single(singles, slack_url_single)
 
@@ -29,6 +31,7 @@ def get_combined_artists_name(artists):
 
 def separate_releases_into_albums_and_singles(items):
     d_today = datetime.date.today()
+    print(d_today)
     albums = []
     singles = []
 
