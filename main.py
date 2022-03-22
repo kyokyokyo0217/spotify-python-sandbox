@@ -6,12 +6,14 @@ from spotify import Spotify
 from slack import Slack
 
 def main():
-    spotify = Spotify()
-    spotify.authorize()
-
     config = dotenv_values(".env")
     slack_url_album = config["SLACK_WEBHOOK_URL_ALBUM"]
     slack_url_single = config["SLACK_WEBHOOK_URL_SINGLE"]
+    client_id = config["SPOTIFY_CLIENT_ID"]
+    client_secret = config["SPOTIFY_CLIENT_SECRET"]
+
+    spotify = Spotify()
+    spotify.authorize(client_id, client_secret)
 
     new_releases = spotify.get_new_releases()
 
@@ -31,7 +33,7 @@ def get_combined_artists_name(artists):
 
 def separate_releases_into_albums_and_singles(items):
     d_today = datetime.date.today()
-    d_today = "2022-03-18"
+    # d_today = "2022-03-18"
     print(d_today)
     albums = []
     singles = []
