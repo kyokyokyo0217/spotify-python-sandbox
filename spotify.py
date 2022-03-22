@@ -47,8 +47,29 @@ class Spotify():
 
         return result
 
-    def get_new_releases(self):
+    def get_new_releases_global(self):
         url = f"https://api.spotify.com/v1/browse/new-releases?offset=0&limit=50"
+
+        try:
+            result_first_half = self.fetch(url)
+        except requests.exceptions.HTTPError as err:
+            print(err)
+            return None
+
+        url_next = result_first_half.json()["albums"]["next"]
+
+        try:
+            result_second_half = self.fetch(url_next)
+        except requests.exceptions.HTTPError as err:
+            print(err)
+            return None
+
+        combined = result_first_half.json()["albums"]["items"] + result_second_half.json()["albums"]["items"]
+
+        return combined
+
+    def get_new_releases_by_country(self, country_code):
+        url = f"https://api.spotify.com/v1/browse/new-releases?offset=0&limit=50&country={country_code}"
 
         try:
             result_first_half = self.fetch(url)

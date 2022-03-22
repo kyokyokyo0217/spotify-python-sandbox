@@ -7,22 +7,28 @@ from slack import Slack
 
 def main():
     config = dotenv_values(".env")
-    slack_url_album = config["SLACK_WEBHOOK_URL_ALBUM"]
-    slack_url_single = config["SLACK_WEBHOOK_URL_SINGLE"]
+    slack_url_album_global = config["SLACK_WEBHOOK_URL_ALBUM_GLOBAL"]
+    slack_url_single_global = config["SLACK_WEBHOOK_URL_SINGLE_GLOBAL"]
+    slack_url_album_japan = config["SLACK_WEBHOOK_URL_ALBUM_JAPAN"]
+    slack_url_single_japan = config["SLACK_WEBHOOK_URL_SINGLE_JAPAN"]
+
     client_id = config["SPOTIFY_CLIENT_ID"]
     client_secret = config["SPOTIFY_CLIENT_SECRET"]
 
     spotify = Spotify()
     spotify.authorize(client_id, client_secret)
 
-    new_releases = spotify.get_new_releases()
+    new_releases_japan = spotify.get_new_releases_by_country("JP")
+    albums_japan, singles_japan = separate_releases_into_albums_and_singles(new_releases_japan)
+    print(f"released today in Japan: albums: {len(albums_japan)}, singles: {len(singles_japan)}")
+    notify_new_releases_album(albums_japan, slack_url_album_japan) 
+    notify_new_releases_single(singles_japan, slack_url_single_japan)
 
-    albums, singles = separate_releases_into_albums_and_singles(new_releases)
-
-    print(f"released_today: albums: {len(albums)}, singles: {len(singles)}")
-
-    notify_new_released_album(albums, slack_url_album)
-    notify_new_released_single(singles, slack_url_single)
+    new_releases = spotify.get_new_releases_global()
+    albums_global, singles_global = separate_releases_into_albums_and_singles(new_releases)
+    print(f"released today in global: albums: {len(albums_global)}, singles: {len(singles_global)}")
+    notify_new_releases_album(albums_global, slack_url_album_global)
+    notify_new_releases_single(singles_global, slack_url_single_global)
 
 def get_combined_artists_name(artists):
     artists_buff = []
@@ -39,14 +45,14 @@ def separate_releases_into_albums_and_singles(items):
     singles = []
 
     for item in items:
-        print(item["release_date"])
+        # print(item["release_date"])
         if str(d_today) != item["release_date"]:
             continue
 
-        if item["album_type"] != "album":
+        if item["album_type"] == "album":
             albums.append(item)
             continue
-        elif item["album_type"] != "single":
+        elif item["album_type"] == "single":
             singles.append(item)
             continue
         else:
@@ -55,7 +61,7 @@ def separate_releases_into_albums_and_singles(items):
 
     return albums, singles
 
-def notify_new_released_album(items, url):    
+def notify_new_releases_album(items, url):    
     data = {
         "blocks": []
     }
@@ -96,7 +102,7 @@ def notify_new_released_album(items, url):
     slack = Slack(url)
     slack.post(data)
 
-def notify_new_released_single(items, url):
+def notify_new_releases_single(items, url):
     data = {
         "blocks": []
     }
