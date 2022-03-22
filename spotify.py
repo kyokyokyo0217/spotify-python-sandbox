@@ -7,10 +7,7 @@ class Spotify():
     spotify_access_token_url = "https://accounts.spotify.com/api/token"
     ACCESS_TOKEN = ""
 
-    def authorize(self):
-        config = dotenv_values(".env")
-        client_id = config["SPOTIFY_CLIENT_ID"]
-        client_secret = config["SPOTIFY_CLIENT_SECRET"]
+    def authorize(self, client_id, client_secret):
         tmp = client_id + ":" + client_secret
         # TODO 冗長かも？binaryの勉強
         b_tmp = tmp.encode()
